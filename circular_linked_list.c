@@ -55,6 +55,7 @@ int main()
 		printf("----------------------------------------------------------------\n");
 
 		printf("Command = ");
+		fflush(stdout);
 		scanf(" %c", &command);
 
 		switch(command) {
@@ -66,16 +67,19 @@ int main()
 			break;
 		case 'i': case 'I':
 			printf("Your Key = ");
+			fflush(stdout);
 			scanf("%d", &key);
 			insertNode(headnode, key);
 			break;
 		case 'd': case 'D':
 			printf("Your Key = ");
+			fflush(stdout);
 			scanf("%d", &key);
 			deleteNode(headnode, key);
 			break;
 		case 'n': case 'N':
 			printf("Your Key = ");
+			fflush(stdout);
 			scanf("%d", &key);
 			insertLast(headnode, key);
 			break;
@@ -84,6 +88,7 @@ int main()
 			break;
 		case 'f': case 'F':
 			printf("Your Key = ");
+			fflush(stdout);
 			scanf("%d", &key);
 			insertFirst(headnode, key);
 			break;
@@ -171,7 +176,19 @@ void printList(listNode* h) {
  * list에 key에 대한 노드하나를 추가
  */
 int insertLast(listNode* h, int key) {
+	if(h->rlink==h){ //전처리검사
+				insertFirst(h,key);
+			}
+			else{
+				listNode* node = (listNode*)malloc(sizeof(listNode)); //리스트노드 생성
+				node->key=key;
+				node->rlink=h; //node는 마지막 값이므로 rlink에 h을 넣어준다.
+				node->llink=h->llink;//왼쪽 링크로 기존의 마지막 노드 가리키도록 함
+				h->llink->rlink=node; //기존 마지막 노드의 오른쪽 링크가 node를 가리키도록 함
+				node->rlink=h;
+				h->llink=node;
 
+			}
 	return 1;
 }
 
@@ -180,7 +197,17 @@ int insertLast(listNode* h, int key) {
  * list의 마지막 노드 삭제
  */
 int deleteLast(listNode* h) {
+	if(h->rlink==h){ //전처리검사
+						printf("Linked List is empty!!!!!");
+						return 0;
+					}
 
+
+			listNode* temp = (listNode*)malloc(sizeof(listNode)); //삭제할 노드
+			temp=h->llink;
+			temp->llink->rlink=h;
+			h->llink=temp->llink;
+			free(temp);
 
 	return 1;
 }
@@ -190,7 +217,12 @@ int deleteLast(listNode* h) {
  * list 처음에 key에 대한 노드하나를 추가
  */
 int insertFirst(listNode* h, int key) {
-
+	listNode* node = (listNode*)malloc(sizeof(listNode)); //새로운 노드 생성
+	node->key = key; //새로운 노드에 key값 넣어줌
+	node->llink=h; //h와 node가 서로 가리키도록 함
+	h->rlink=node;
+	node->rlink=h;
+	h->llink=node;
 
 	return 1;
 }
@@ -210,7 +242,27 @@ int deleteFirst(listNode* h) {
  * 리스트의 링크를 역순으로 재 배치
  */
 int invertList(listNode* h) {
+	if(h->rlink==h){
+			printf("Linked List is empty!!!!!");
+			return 0;
+		}
 
+		listNode *temp, *p, *tail;
+		temp=h;
+		tail=temp;
+		p=h->rlink;
+
+		if(temp->rlink ==h){ //노드가 하나뿐일 때
+			return h; //그대로 리턴
+		}
+
+
+		while(p != h){ //노드 두개 이상일 때
+			temp=p->rlink;
+			p->rlink=p->llink;
+			p->llink=temp;
+			p=p->rlink;
+		}
 
 	return 0;
 }
@@ -221,7 +273,37 @@ int invertList(listNode* h) {
  *  리스트를 검색하여, 입력받은 key보다 큰값이 나오는 노드 바로 앞에 삽입
  **/
 int insertNode(listNode* h, int key) {
-
+	if(h->rlink==h){ //전처리검사
+					insertFirst(h,key);
+				}
+		listNode* node = (listNode*)malloc(sizeof(listNode));
+		listNode* temp = (listNode*)malloc(sizeof(listNode)); //임시노드 생성
+		node->key = key;
+		temp=h->rlink;
+		if(temp->key>=key){ //비교연산, 헤드와 첫번째 노드 사이에 넣음
+				node->rlink=temp;
+				node->llink=h;
+				h->rlink=node;
+				}
+			else{
+				while(1){
+					if (temp->rlink == h){ //노드가 한개인 경우
+						temp->rlink=node;
+						node->llink=temp;
+						node->rlink=h;
+						h->llink=node;
+						break;
+					}
+					else if (temp->rlink->key>key){//temp->key <= key < temp->link->key
+						node->llink=temp;
+						node->rlink=temp->rlink;
+						temp->rlink=node;
+						break;
+					}
+					else //범위에 해당하지 않으면 temp 한칸 옮김
+						temp=temp->rlink;
+				}
+			}
 	return 0;
 }
 
@@ -230,7 +312,32 @@ int insertNode(listNode* h, int key) {
  * list에서 key에 대한 노드 삭제
  */
 int deleteNode(listNode* h, int key) {
+	if(h->rlink==h){
+					printf("Linked List is empty!!!!!");
+					return 0;
+				}
+			else{
 
+			listNode* temp = (listNode*)malloc(sizeof(listNode)); //삭제할 노드
+			temp=h->rlink;
+			if(temp->key == key){ //첫번 째 노드가 key일 때
+				deleteFirst(h);
+			}
+			temp=temp->rlink;
+			while(temp !=h){ //노드검색
+				if(temp->key == key){
+					temp->llink->rlink=temp->rlink; //앞뒤 노드 서로 연결
+					temp->rlink->llink=temp->llink;
+					free(temp);
+					return 0;
+				}
+			temp=temp->rlink; //한칸씩 옮김
+			}
+
+			if(temp==h){//key값이 노드에 없는 경우
+			printf("Key is not founded in linked list\n");
+				}
+			}
 	return 0;
 }
 
