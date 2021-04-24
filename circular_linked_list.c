@@ -226,10 +226,11 @@ int insertFirst(listNode* h, int key) {
 	listNode* node = (listNode*)malloc(sizeof(listNode)); //새로운 노드 생성
 	node->key = key; //새로운 노드에 key값 넣어줌
 
-	node->llink=h;
-	h->rlink=node;
-	node->rlink=h;
-	h->llink=node;
+	node->llink=h; //h와 node가 서로 가리키도록 함
+		h->rlink=node;
+		node->rlink=h;
+		h->llink=node;
+
 
 	return 1;
 }
@@ -262,44 +263,49 @@ int deleteFirst(listNode* h) {
 /**
  * 리스트의 링크를 역순으로 재 배치
  */
-int invertList(listNode* h) { ////////////////////다쉬!!!!!!!!!!!!11
+int invertList(listNode* h) {
 	if(h->rlink==h){ //전처리검사, 헤드가 자신을 가리키고 있을때(노드 없음)
 			printf("Linked List is empty!!!!!\n");
 			return 0;
 		}
+
 	listNode *temp, *current;
 		current = h->rlink;
+		temp=h->llink;
+		h->rlink=temp;
 		h->llink=current;
-		    while(current != h)
-		    {
 
-		        temp = current->rlink;
-		        current->rlink = current->llink;
-		        current->llink = temp;
+		 while(current != h)
+		 {
+			 temp = current->rlink;
+			 current->rlink = current->llink;
+			 current->llink = temp;
+			 current = temp;
+		 }
 
-
-		        current = temp;
-		    }
-
-
-		/*listNode *temp, *p;
-		temp=h;
+		 return 0;
+	/*listNode *temp, *p;
+		temp=NULL;
 		p=h->rlink;
+		h->llink=p;
+		h->rlink=h->llink;
 
-		if(temp->rlink ==h){ //노드가 하나뿐일 때
-			return 0; //그냥 리턴
+	if(p->rlink=h){ //노드가 하나인 경우
+			return 0;
 		}
 
+	while(p != h){ //헤더 알링크 안바뀜
+		temp =p->llink;
+		p->llink=p->rlink;
+		p->rlink=temp;
+		p=p->llink;
+	}*/
+	/*if(p==h){
+	p=p->rlink; //p=h->rlink
+	h->rlink=p;
+	}*/
 
-		while(p != h){ //노드 두개 이상일 때
-			temp=p->rlink;
-			p->rlink=p->llink;
-			p->llink=temp;
-			p=p->rlink;
-		}
-		h->rlink=p;
-*/
-	return 0;
+
 }
 
 
