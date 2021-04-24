@@ -128,7 +128,13 @@ int initialize(listNode** h) {
 
 /* 메모리 해제 */
 int freeList(listNode* h){
-
+	listNode* p = h->rlink;
+	listNode* prev = NULL;
+	while(p != h) {
+		prev = p;
+		p = p->rlink;
+		free(prev);
+	}		free(h);
 	return 0;
 }
 
@@ -176,8 +182,8 @@ void printList(listNode* h) {
  * list에 key에 대한 노드하나를 추가
  */
 int insertLast(listNode* h, int key) {
-	if(h->rlink==h){ //전처리검사
-				insertFirst(h,key);
+	if(h->rlink==h){ //전처리검사, 헤드가 자신을 가리키고 있을때(노드 없음)
+				insertFirst(h,key); //첫번째노드 추가
 			}
 			else{
 				listNode* node = (listNode*)malloc(sizeof(listNode)); //리스트노드 생성
@@ -185,8 +191,8 @@ int insertLast(listNode* h, int key) {
 				node->rlink=h; //node는 마지막 값이므로 rlink에 h을 넣어준다.
 				node->llink=h->llink;//왼쪽 링크로 기존의 마지막 노드 가리키도록 함
 				h->llink->rlink=node; //기존 마지막 노드의 오른쪽 링크가 node를 가리키도록 함
-				node->rlink=h;
-				h->llink=node;
+				node->rlink=h; //순환리스트이므로 노드의 오른쪽링크는 다시 헤드를 가리킴
+				h->llink=node; //순환처리
 
 			}
 	return 1;
@@ -197,17 +203,17 @@ int insertLast(listNode* h, int key) {
  * list의 마지막 노드 삭제
  */
 int deleteLast(listNode* h) {
-	if(h->rlink==h){ //전처리검사
-						printf("Linked List is empty!!!!!");
+	if(h->rlink==h){  //전처리검사, 헤드가 자신을 가리키고 있을때(노드 없음)
+						printf("Linked List is empty!!!!!\n");
 						return 0;
 					}
 
 
 			listNode* temp = (listNode*)malloc(sizeof(listNode)); //삭제할 노드
-			temp=h->llink;
-			temp->llink->rlink=h;
-			h->llink=temp->llink;
-			free(temp);
+			temp=h->llink; //마지막 노드로 이동
+			temp->llink->rlink=h; //마지막 전 노드의 오른쪽 링크 헤드 가리키게 하여 순환토록 함
+			h->llink=temp->llink; //헤드의 왼쪽 링크 수정하여 삭제할 노드 제외 순한토록 함
+			free(temp); //노드 메모리 해제
 
 	return 1;
 }
@@ -219,7 +225,8 @@ int deleteLast(listNode* h) {
 int insertFirst(listNode* h, int key) {
 	listNode* node = (listNode*)malloc(sizeof(listNode)); //새로운 노드 생성
 	node->key = key; //새로운 노드에 key값 넣어줌
-	node->llink=h; //h와 node가 서로 가리키도록 함
+
+	node->llink=h;
 	h->rlink=node;
 	node->rlink=h;
 	h->llink=node;
@@ -231,17 +238,17 @@ int insertFirst(listNode* h, int key) {
  * list의 첫번째 노드 삭제
  */
 int deleteFirst(listNode* h) {
-	if(h->rlink==h){ //전처리검사
-				printf("Linked List is empty!!!!!");
+	if(h->rlink==h){  //전처리검사, 헤드가 자신을 가리키고 있을때(노드 없음)
+				printf("Linked List is empty!!!!!\n");
 				return 0;
 			}
 	listNode* temp = (listNode*)malloc(sizeof(listNode)); //임시노드 생성
-			temp=h->rlink;
-			h->rlink=temp->rlink;
+			temp=h->rlink; //temp=첫번째 노드
+			h->rlink=temp->rlink; //temp->rlink=h인 경우 헤드만 남음
 			if(temp->rlink !=h){ //노드가 하나 이상인 경우
 				temp->rlink->llink=h;
 			}
-			if(temp->rlink == h){
+			if(temp->rlink == h){ //노드가 하나인 경우 deleteLast와 같으므로 함수 호출
 				deleteLast(h);
 				return 0;
 			}
@@ -256,17 +263,31 @@ int deleteFirst(listNode* h) {
  * 리스트의 링크를 역순으로 재 배치
  */
 int invertList(listNode* h) { ////////////////////다쉬!!!!!!!!!!!!11
-	if(h->rlink==h){//전처리검사
-			printf("Linked List is empty!!!!!");
+	if(h->rlink==h){ //전처리검사, 헤드가 자신을 가리키고 있을때(노드 없음)
+			printf("Linked List is empty!!!!!\n");
 			return 0;
 		}
+	listNode *temp, *current;
+		current = h->rlink;
+		h->llink=current;
+		    while(current != h)
+		    {
 
-		listNode *temp, *p;
+		        temp = current->rlink;
+		        current->rlink = current->llink;
+		        current->llink = temp;
+
+
+		        current = temp;
+		    }
+
+
+		/*listNode *temp, *p;
 		temp=h;
 		p=h->rlink;
 
 		if(temp->rlink ==h){ //노드가 하나뿐일 때
-			return h; //그대로 리턴
+			return 0; //그냥 리턴
 		}
 
 
@@ -276,7 +297,8 @@ int invertList(listNode* h) { ////////////////////다쉬!!!!!!!!!!!!11
 			p->llink=temp;
 			p=p->rlink;
 		}
-
+		h->rlink=p;
+*/
 	return 0;
 }
 
@@ -286,11 +308,11 @@ int invertList(listNode* h) { ////////////////////다쉬!!!!!!!!!!!!11
  *  리스트를 검색하여, 입력받은 key보다 큰값이 나오는 노드 바로 앞에 삽입
  **/
 int insertNode(listNode* h, int key) {
-	if(h->rlink==h){ //전처리검사
+	if(h->rlink==h){  //전처리검사, 헤드가 자신을 가리키고 있을때(노드 없음)
 					insertFirst(h,key);
 					return 0;
 				}
-		listNode* node = (listNode*)malloc(sizeof(listNode));
+		listNode* node = (listNode*)malloc(sizeof(listNode)); //노드생성
 		listNode* temp = (listNode*)malloc(sizeof(listNode)); //임시노드 생성
 		node->key = key;
 		temp=h->rlink;
@@ -326,16 +348,16 @@ int insertNode(listNode* h, int key) {
  * list에서 key에 대한 노드 삭제
  */
 int deleteNode(listNode* h, int key) {
-	if(h->rlink==h){
-					printf("Linked List is empty!!!!!");
+	if(h->rlink==h){ //전처리검사, 헤드가 자신을 가리키고 있을때(노드 없음)
+					printf("Linked List is empty!!!!!\n");
 					return 0;
 				}
 			else{
 
 			listNode* temp = (listNode*)malloc(sizeof(listNode)); //삭제할 노드
-			temp=h->rlink;
-			if(temp->key == key){ //첫번 째 노드가 key일 때
-				deleteFirst(h);
+			temp=h->rlink; //temp=첫번째 노
+			if(temp->key == key){ //첫번 째 노드가 찾는 값일 때
+				deleteFirst(h); //첫번째 노드를 삭제하는 것과 같으므로 함수 호출
 			}
 			temp=temp->rlink;
 			while(temp !=h){ //노드검색
