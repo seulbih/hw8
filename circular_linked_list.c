@@ -130,11 +130,12 @@ int initialize(listNode** h) {
 int freeList(listNode* h){
 	listNode* p = h->rlink;
 	listNode* prev = NULL;
-	while(p != h) {
+
+	while(p != h) { //순환하며 노드 해제
 		prev = p;
 		p = p->rlink;
 		free(prev);
-	}		free(h);
+	}		free(h); //마지막으로 헤드노드 해제
 	return 0;
 }
 
@@ -272,10 +273,10 @@ int invertList(listNode* h) {
 	listNode *temp, *current;
 		current = h->rlink;
 		temp=h->llink;
-		h->rlink=temp;
+		h->rlink=temp; //헤드노드의 링크들 먼저 바꿔줌
 		h->llink=current;
 
-		 while(current != h)
+		 while(current != h) //노드 순환하며 링크 교체
 		 {
 			 temp = current->rlink;
 			 current->rlink = current->llink;
@@ -284,28 +285,6 @@ int invertList(listNode* h) {
 		 }
 
 		 return 0;
-	/*listNode *temp, *p;
-		temp=NULL;
-		p=h->rlink;
-		h->llink=p;
-		h->rlink=h->llink;
-
-	if(p->rlink=h){ //노드가 하나인 경우
-			return 0;
-		}
-
-	while(p != h){ //헤더 알링크 안바뀜
-		temp =p->llink;
-		p->llink=p->rlink;
-		p->rlink=temp;
-		p=p->llink;
-	}*/
-	/*if(p==h){
-	p=p->rlink; //p=h->rlink
-	h->rlink=p;
-	}*/
-
-
 }
 
 
